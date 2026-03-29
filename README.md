@@ -118,8 +118,8 @@ If you use this system or architecture in your research, please cite it as:
 ```text
 @software{project_aiden,
   title={Project Aiden: Multi-Agent Evolution and Collaboration Framework with LLM Arbitration},
-  author={Your Name},
+  author={Faizaan},
   year={2026},
-  url={https://github.com/yourusername/project-aiden}
+  url={https://github.com/khanfaizaan432-stack/Project-aiden}
 }
 ```
