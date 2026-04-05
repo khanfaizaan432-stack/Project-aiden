@@ -25,7 +25,8 @@ export type EventType =
   | "agent_message"
   | "oracle_proclamation"
   | "agent_death"
-  | "agent_born";
+  | "agent_born"
+  | "evaluation_result";
 
 export interface FeedEvent {
   id: string;
@@ -35,4 +36,23 @@ export interface FeedEvent {
   message: string;
   timestamp: Date;
   healthDelta?: number;
+  predictedClass?: string;
+  probabilities?: Record<string, number>;
+  agentNames?: string[];
+}
+
+export interface EvaluateVote {
+  agent_id: number;
+  agent_name: string;
+  probabilities: Record<string, number>;
+}
+
+export interface EvaluateResponse {
+  agent_id: number;
+  agent_name: string;
+  agent_ids: number[];
+  agent_names: string[];
+  predicted: string;
+  probabilities: Record<string, number>;
+  votes: EvaluateVote[];
 }

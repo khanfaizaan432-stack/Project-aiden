@@ -5,7 +5,7 @@ import { TribeColumn } from "../components/society/TribeColumn";
 import { useWebSocket } from "../hooks/useWebSocket";
 
 export function Dashboard() {
-  const { agents, feedEvents, oracleProclamations, isLive, submitTask } =
+  const { agents, feedEvents, oracleProclamations, isLive, submitTask, evaluateImage } =
     useWebSocket();
   const latestProclamation =
     oracleProclamations[0] ?? "AWAITING ORACLE SIGNAL...";
@@ -84,6 +84,7 @@ export function Dashboard() {
         <OraclePanel
           oracleProclamations={oracleProclamations}
           onSubmitTask={submitTask}
+          onEvaluateImage={evaluateImage}
         />
       </div>
 

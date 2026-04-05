@@ -23,6 +23,56 @@ function formatTime(date: Date): string {
 function FeedEventItem({ event }: { event: FeedEvent }) {
   const tribeColor = event.tribe ? TRIBE_COLORS[event.tribe] : "#f59e0b";
 
+  if (event.type === "evaluation_result") {
+    const probabilities = event.probabilities ?? {};
+    const rankedProbabilities = Object.entries(probabilities)
+      .sort((left, right) => right[1] - left[1])
+      .slice(0, 4);
+
+    return (
+      <div
+        className="p-2 rounded-sm text-[11px] font-mono"
+        style={{
+          backgroundColor: "rgba(46,163,106,0.08)",
+          border: "1px solid rgba(46,163,106,0.25)",
+        }}
+      >
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <span style={{ color: "#2ea36a" }}>🖼</span>
+          <span
+            className="text-[9px] uppercase tracking-wider font-bold"
+            style={{ color: "#2ea36a88" }}
+          >
+            IMAGE EVALUATION · {formatTime(event.timestamp)}
+          </span>
+        </div>
+        <p
+          className="text-[10px] uppercase tracking-wide leading-snug font-bold mb-1.5"
+          style={{ color: "#7ee2a8" }}
+        >
+          {event.message}
+        </p>
+        {event.agentNames && event.agentNames.length > 0 && (
+          <p className="text-[9px] uppercase tracking-widest mb-2" style={{ color: "#99d8b4" }}>
+            VOTERS: {event.agentNames.join(" · ")}
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          {rankedProbabilities.map(([label, probability]) => (
+            <div key={label} className="flex items-center justify-between gap-2">
+              <span className="text-[9px] uppercase tracking-wider" style={{ color: "#99d8b4" }}>
+                {label}
+              </span>
+              <span className="text-[9px] font-bold tabular-nums" style={{ color: "#d5ffe4" }}>
+                {(probability * 100).toFixed(1)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (event.type === "oracle_proclamation") {
     return (
       <div

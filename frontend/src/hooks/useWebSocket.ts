@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { INITIAL_AGENTS } from "../data/initialAgents";
-import type { Agent, FeedEvent, Modality } from "../types/society";
+import type { Agent, EvaluateResponse, FeedEvent, Modality } from "../types/society";
 
 const ORACLE_PROCLAMATIONS = [
   "THE SOCIETY EVOLVES. THOSE WHO GENERATE SHALL INHERIT THE CONTEXT WINDOW.",
@@ -38,6 +38,10 @@ function pickRandom<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+function formatProbability(probability: number): string {
+  return `${(probability * 100).toFixed(1)}%`;
+}
+
 export function useWebSocket() {
   const [agents, setAgents] = useState<Agent[]>(INITIAL_AGENTS);
   const [feedEvents, setFeedEvents] = useState<FeedEvent[]>([]);
@@ -65,6 +69,22 @@ export function useWebSocket() {
         type: "oracle_proclamation",
         message: text,
         timestamp: new Date(),
+      });
+    },
+    [addFeedEvent],
+  );
+
+  const addEvaluationResult = useCallback(
+    (result: EvaluateResponse, fileName: string) => {
+      addFeedEvent({
+        id: generateId(),
+        type: "evaluation_result",
+        tribe: "image",
+        message: `ENSEMBLE PREDICTED ${result.predicted.toUpperCase()} FOR ${fileName}`,
+        timestamp: new Date(),
+        predictedClass: result.predicted,
+        probabilities: result.probabilities,
+        agentNames: result.agent_names,
       });
     },
     [addFeedEvent],
@@ -410,5 +430,73 @@ export function useWebSocket() {
     [isLive, agents, addFeedEvent],
   );
 
-  return { agents, feedEvents, oracleProclamations, isLive, submitTask };
+  const evaluateImage = useCallback(
+    async (imageFile: File) => {
+      if (isLive) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        const response = await fetch("/api/evaluate", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const detail = await response.text();
+          throw new Error(detail || "Image evaluation failed.");
+        }
+
+        const result = (await response.json()) as EvaluateResponse;
+        addEvaluationResult(result, imageFile.name);
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const labels = [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+      ];
+      const probabilities = Object.fromEntries(
+        labels.map((label) => [label, Math.random()]),
+      ) as Record<string, number>;
+      const total = Object.values(probabilities).reduce(
+        (sum, value) => sum + value,
+        0,
+      );
+      for (const label of labels) {
+        probabilities[label] /= total;
+      }
+      const predicted = labels.reduce(
+        (bestLabel, currentLabel) =>
+          probabilities[currentLabel] > probabilities[bestLabel]
+            ? currentLabel
+            : bestLabel,
+        labels[0],
+      );
+
+      addEvaluationResult(
+        {
+          agent_id: 0,
+          agent_name: "ensemble",
+          agent_ids: [0, 7, 13, 14],
+          agent_names: ["Atlas", "Vega", "Cipher", "Solace"],
+          predicted,
+          probabilities,
+          votes: [],
+        },
+        imageFile.name,
+      );
+    },
+    [isLive, addEvaluationResult],
+  );
+
+  return { agents, feedEvents, oracleProclamations, isLive, submitTask, evaluateImage };
 }

@@ -17,7 +17,7 @@ if ($connections) {
 }
 
 $backendCommand = "Set-Location '$repoRoot'; `$env:PYTHONPATH='backend'; `$env:SOCIETY_TICK_ACTIVE='5'; `$env:SOCIETY_TICK_IDLE='30'; c:/python314/python.exe -m uvicorn backend.main:app --port 8000"
-$frontendCommand = "Set-Location '$repoRoot'; npm --prefix frontend run dev"
+$frontendCommand = "Set-Location '$repoRoot'; npm --prefix frontend run build:local; npm --prefix frontend run serve"
 
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand
 Start-Sleep -Seconds 1

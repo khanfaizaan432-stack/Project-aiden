@@ -10,7 +10,7 @@
     "dev:all": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/dev-all.ps1",
     "dev:backend": "set PYTHONPATH=backend&& set SOCIETY_TICK_ACTIVE=5&& set SOCIETY_TICK_IDLE=30&& c:/python314/python.exe -m uvicorn backend.main:app --port 8000",
     "dev:backend:clean": "powershell -NoProfile -Command \"$connections = Get-NetTCPConnection -LocalPort 8000 -State Listen -ErrorAction SilentlyContinue; if ($connections) { $ids = $connections | Select-Object -ExpandProperty OwningProcess -Unique; foreach ($procId in $ids) { try { Stop-Process -Id $procId -Force -ErrorAction Stop } catch {} } }; $env:PYTHONPATH='backend'; $env:SOCIETY_TICK_ACTIVE='5'; $env:SOCIETY_TICK_IDLE='30'; & 'c:/python314/python.exe' -m uvicorn backend.main:app --port 8000\"",
-    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:frontend": "npm --prefix frontend run build:local && npm --prefix frontend run serve",
     "build": "pnpm -r --if-present run build",
     "typecheck": "pnpm -r --if-present run typecheck",
     "check": "pnpm -r --if-present run check",
